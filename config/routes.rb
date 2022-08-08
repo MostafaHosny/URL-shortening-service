@@ -1,3 +1,10 @@
+# frozen_string_literal: true
+
 Rails.application.routes.draw do
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+  namespace :api do
+    namespace :v1 do
+      resources :urls, only: :create
+    end
+  end
+  get '/:short_id' => 'api/v1/urls#show', defaults: { id: 'short_id' }
 end
