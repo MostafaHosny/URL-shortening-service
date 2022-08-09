@@ -30,15 +30,15 @@
 1. ``Authentication``
 - The service is currently public (for simplicty) but for future developmet API key might be added if we don't require the user to be authenticated.
 - If we added a User model, then we can introduce a JWT token for each user.
-2.``Genrating short links``
-- Encode the original Url 
+2. ``Genrating short links``
+- Encode the original Url:- 
   - One solution is to encode the original Url, using any hashing  algorithm (MD5), but that will lead to a long url and if we cut some characters from the encoded hash, we might have a duplication in our generated short URLs.
-- Generate a secure URL-friendly unique string(NanoId).
-This is the solution that I used to map the original URLs to a short link.
-- The idea is to have a unique generated string per each URL and avoid the duplication as possible.
-- The current mechanism has less collision probability, but it's still a valid issue in this solution I handled the collision once per each request, it's not ideal but the main Idea is to regenerate the NanoId whenever we have the same key assigned to another URL.
-The disadvantage of that solution is we will need to regenerate the id every time we got a collision which affects the performance of the service in the long term.
-- One way to fix this problem is to have pre-generated keys stored in another document and every time we use one of those keys we mark it as used.
+- Generate a secure URL-friendly unique string(NanoId):-
+  - This is the solution that I used to map the original URLs to a short link.
+  - The idea is to have a unique generated string per each URL and avoid the duplication as possible.
+  - The current mechanism has less collision probability, but it's still a valid issue in this solution I handled the collision once per each request, it's not ideal but the main Idea is to regenerate the NanoId whenever we have the same key assigned to another URL.
+  - The disadvantage of that solution is we will need to regenerate the id every time we got a collision which affects the performance of the service in the long term.
+  - One way to fix this problem is to have pre-generated keys stored in another document and every time we use one of those keys we mark it as used.
  
 3. ``JSON Responses``
 - it's a good practice to follow [JSON API specification]
