@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 class ShortenUrlService
-  BASE_URL = 'localhost:3000/'
+  BASE_URL = 'http://localhost:3000/'
   SHORT_ID_SIZE = 10
+  MAX_ATTEMPTS = 5
+  
   attr_reader :original_url, :url_object
 
   def initialize(url_params)
