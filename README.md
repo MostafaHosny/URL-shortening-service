@@ -2,7 +2,8 @@
  
 # URL shortening service :sunny:
  
-- Rails API mode service.
+- This service is a built using Rails in API mode. It's designed to provide quick and reliable URL shortening functionality, transforming lengthy URLs into shorter ones.
+
  
 ## Getting Started
  
@@ -12,34 +13,32 @@
  
 ## Dependencies
  
-- Ruby 2.7.2
+- Ruby 3.2.2
 - MongoDB 6.0.0
+- Rails 7.1.3.2
  
 ## Requriments
-- The end-user provides the service with a valid URL, the service should generate a shorter and unique alias for it
-- I assumed the short link should not be more than 10 chars and hard and not predictable.
-- When users access the short generated link that is provided by the service, the service should redirect them to the original link.
-- The service should provide 2 endpoints the first one to generate the short link and the other endpoint for redirection.
+- Users can submit a valid URL to generate a shorter and unique alias.
+- Short links are no more than 10 characters, hard to guess, and non-sequential.
+- Accessing the short link redirects users to the original URL.
+- Provides two endpoints: one for generating the short link and another for redirection.
 ## Database
-* When creating the data model, I found that we don't need many relations between our models, in this case, we don't need relational DB and a NoSQL database like MongoDB can be used.
-- Currently, we have one document that store the Orignal link and the Short-id.
-- If we decided to add a user model if it will have one-to-many relation to the Url document which is easy to manage.
-- Url docuemnt will be read heavy, that's why an index has been added on the short_id attribute.
+
+MongoDB, a NoSQL database, is used due to its flexibility and scalability, suitable for the service's non-relational data model.
+
+- **ShortenedUrl Document**: Stores the original link and its corresponding short ID.
+- **Indexing**: An index on the `short_id` attribute optimizes read operations, enhancing the service's performance for redirection.
+- **Future Considerations**: Adding user authentication could introduce a User model with a one-to-many relationship to the Url document.
  
 ## Development
-1. ``Authentication``
-- The service is currently public (for simplicty) but for future developmet API key might be added if we don't require the user to be authenticated.
-- If we added a User model, then we can introduce a JWT token for each user.
-2. ``Genrating short links``
-- Encode the original Url:- 
-  - One solution is to encode the original Url, using any hashing  algorithm (MD5), but that will lead to a long url and if we cut some characters from the encoded hash, we might have a duplication in our generated short URLs.
-- Generate a secure URL-friendly unique string(NanoId):-
-  - This is the solution that I used to map the original URLs to a short link.
-  - The idea is to have a unique generated string per each URL and avoid the duplication as possible.
-  - The current mechanism has less collision probability, but it's still a valid issue in this solution I handled the collision once per each request, it's not ideal but the main Idea is to regenerate the NanoId whenever we have the same key assigned to another URL.
-  - The disadvantage of that solution is we will need to regenerate the id every time we got a collision which affects the performance of the service in the long term.
-  - One way to fix this problem is to have pre-generated keys stored in another document and every time we use one of those keys we mark it as used.
- 
+1. **Authentication** (Planned)
+   - API key-based access for public endpoints.
+   - JWT authentication for user-specific operations.
+
+2. **Generating Short Links**
+   - Utilizes NanoId to generate secure, URL-friendly unique strings, minimizing collision probability.
+   - Handles collision by regenerating the NanoId, with considerations for optimizing performance through pre-generated keys.
+
 3. ``JSON Responses``
 - it's a good practice to follow [JSON API specification]
 so any consumer can expect how the results will look like while the development of the APIs is happening.
