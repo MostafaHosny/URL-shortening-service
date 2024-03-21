@@ -10,7 +10,9 @@ module Api
 
       def show
         url = ShortenedUrl.find_by!(short_id: params[:short_id])
-        render status: :temporary_redirect, location: url.original_url
+        redirect_to url.original_url, status: :temporary_redirect
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: 'Shortened URL not found.' }, status: :not_found
       end
 
       private

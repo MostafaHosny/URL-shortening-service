@@ -1,28 +1,34 @@
-# frozen_string_literal: true
-
 class ShortenUrlService
   BASE_URL = 'http://localhost:3000/'
   SHORT_ID_SIZE = 10
-  MAX_ATTEMPTS = 5
+  MAX_ATTEMPTS = 3
   
-  attr_reader :original_url, :url_object
+  attr_reader :original_url, :short_id
 
   def initialize(url_params)
     @original_url = url_params[:original_url]
   end
 
   def call
-    create_new_url_record
-    BASE_URL + url_object.short_id
+    generate_unique_short_id
+    ShortenedUrl.create!(original_url: original_url, short_id: @short_id)
+    BASE_URL + @short_id
+  rescue Mongoid::Errors::Validations => e
+    handle_creation_error(e)
   end
 
-  def create_new_url_record
-    @url_object = ShortenedUrl.new(original_url: original_url, short_id: Nanoid.generate(size: SHORT_ID_SIZE))
-    url_object.save!
-  rescue Mongoid::Errors::Validations # handle collision only once!
-    if url_object.errors.attribute_names.include?(:short_id) && url_object.errors.attribute_names.count == 1
-      url_object.short_id = Nanoid.generate(size: SHORT_ID_SIZE)
+  private
+
+  def generate_unique_short_id
+    MAX_ATTEMPTS.times do
+      @short_id = Nanoid.generate(size: SHORT_ID_SIZE)
+      return true unless ShortenedUrl.exists?(short_id: @short_id)
     end
-    url_object.save!
+    false
+  end
+
+  def handle_creation_error(error)
+    Rails.logger.error("Failed to create a shortened URL: #{error.message}")
+    raise error
   end
 end

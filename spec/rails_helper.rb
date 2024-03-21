@@ -56,4 +56,10 @@ RSpec.configure do |config|
   # config.filter_gems_from_backtrace("gem name")
 
   config.include FactoryBot::Syntax::Methods
+
+  config.after(:each) do
+    Mongoid::Clients.default.database.collections.each do |collection|
+      collection.drop
+    end
+  end
 end

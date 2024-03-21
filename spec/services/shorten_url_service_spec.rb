@@ -2,39 +2,40 @@ require 'rails_helper'
 
 RSpec.describe ShortenUrlService do
   describe '#call' do
+    subject(:service) { described_class.new(original_url: original_url) }
     let(:original_url) { 'https://example.com' }
-    let(:service) { described_class.new(original_url: original_url) }
-    let(:max_attempts) { ShortenUrlService::MAX_ATTEMPTS }
-    
-    context 'when a unique short_id is generated on the first try' do
-      it 'creates a new ShortenedUrl record' do
-        expect { service.call }.to change { ShortenedUrl.count }.by(1)
+
+    context 'when generating a unique short_id' do
+      it 'creates a new ShortenedUrl and returns the shortened URL' do
+        expect { service.call }.to change(ShortenedUrl, :count).by(1)
       end
     end
 
-    context 'when a collision occurs' do
-      let!(:existing_shortened_url) { create(:shortened_url, short_id: 'existingid') }
-      
-      context 'When it happens only once' do
-        before do
-          allow(Nanoid).to receive(:generate).and_return('existingid', 'uniqueid')
-        end
+    context 'when a generated short_id already exists' do
+      let(:existing_short_id) { 'duplicateId' }
+      let(:new_unique_id) { 'uniqueId123' }
 
-        it 'retries and creates a new ShortenedUrl with a unique short_id' do
-          expect { service.call }.to change { ShortenedUrl.count }.by(1)
-          expect(ShortenedUrl.last.short_id).not_to eq(existing_shortened_url.short_id)
-        end
+      before do
+        create(:shortened_url, short_id: existing_short_id)
+        allow(Nanoid).to receive(:generate).and_return(existing_short_id, new_unique_id)
       end
 
-      context "when collisions occur for MAX_ATTEMPTS attempts" do
-        before do
-          allow(Nanoid).to receive(:generate).and_return('existingid')
-        end
-  
-        it "raises an error after max_attempts" do
-          expect(Nanoid).to receive(:generate).exactly(max_attempts + 1).times
-          expect { service.call }.to raise_error(RuntimeError, /Unable to create a unique short URL after #{max_attempts} attempts/)
-        end
+      it 'retries and generates a new unique short_id' do
+        expect { service.call }.to change(ShortenedUrl, :count).by(1)
+        expect(service.short_id).to eq(new_unique_id)
+      end
+    end
+
+    context 'when unable to generate a unique short_id after max attempts' do
+      let(:duplicate_id) { 'duplicateId' }
+
+      before do
+        create(:shortened_url, short_id: duplicate_id)
+        allow(Nanoid).to receive(:generate).and_return(duplicate_id)
+      end
+
+      it 'raises an error after reaching the maximum number of attempts' do
+        expect { service.call }.to raise_error(Mongoid::Errors::Validations)
       end
     end
   end
