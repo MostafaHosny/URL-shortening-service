@@ -15,7 +15,7 @@ class ShortenUrlService
   end
 
   def create_new_url_record
-    @url_object = Url.new(original_url: original_url, short_id: Nanoid.generate(size: SHORT_ID_SIZE))
+    @url_object = ShortenedUrl.new(original_url: original_url, short_id: Nanoid.generate(size: SHORT_ID_SIZE))
     url_object.save!
   rescue Mongoid::Errors::Validations # handle collision only once!
     if url_object.errors.attribute_names.include?(:short_id) && url_object.errors.attribute_names.count == 1

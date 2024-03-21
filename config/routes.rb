@@ -3,8 +3,8 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
-      resources :urls, only: :create
+      resources :shortened_urls, only: :create
     end
   end
-  get '/:short_id' => 'api/v1/urls#show', defaults: { id: 'short_id' }
+  get '/:short_id' => 'api/v1/shortened_urls#show', defaults: { id: 'short_id' }
 end

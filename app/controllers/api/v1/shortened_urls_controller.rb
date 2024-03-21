@@ -2,14 +2,14 @@
 
 module Api
   module V1
-    class UrlsController < ApplicationController
+    class ShortenedUrlsController < ApplicationController
       def create
         response = ShortenUrlService.new(url_params).call
         render status: :created, json: { short_url: response }
       end
 
       def show
-        url = Url.find_by!(short_id: params[:short_id])
+        url = ShortenedUrl.find_by!(short_id: params[:short_id])
         render status: :temporary_redirect, location: url.original_url
       end
 

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Url
+class ShortenedUrl
   include Mongoid::Document
   include ActiveModel::Validations
 
